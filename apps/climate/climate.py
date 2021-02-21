@@ -1,8 +1,8 @@
-from types import prepare_class
-import appdaemon.plugins.hass.hassapi as hass
 import datetime
-from typing import Dict, Type
 from dataclasses import dataclass
+from typing import Dict
+
+import appdaemon.plugins.hass.hassapi as hass
 
 
 @dataclass
@@ -12,8 +12,7 @@ class Preferences:
     target_area: str
 
     @classmethod
-    def from_args(cls, prefs: Dict[str, Dict[str, str]]) -> Dict[
-        str, 'Preferences']:
+    def from_args(cls, prefs: Dict[str, Dict[str, str]]) -> Dict[str, "Preferences"]:
         ret = {}
         for k, v in prefs.items():
             ret[k] = cls(**v)
@@ -48,7 +47,7 @@ class Climate(hass.Hass):
         current_outside_temp = self.outside_temperature
         current_state = self.get_state(self.thermostat)
         thermostat_temp = self.get_state(
-                self.thermostat, attribute="current_temperature"
+            self.thermostat, attribute="current_temperature"
         )
         sensors = self.args.get("inside_temperature_sensors", {})
         current_temps = {}
@@ -68,15 +67,17 @@ class Climate(hass.Hass):
         target_area = preference.target_area
 
         if target_area in current_temps:
-            adj_temp = current_temps[target_area] + sensors.get(
-                    target_area).get("adjustment", 0)
+            adj_temp = current_temps[target_area] + sensors.get(target_area).get(
+                "adjustment", 0
+            )
             self.log(
-                    f"Target area: {target_area} adjusted temperature: {adj_temp}, actual: {current_temps[target_area]}")
+                f"Target area: {target_area} adjusted temperature: {adj_temp}, actual: {current_temps[target_area]}"
+            )
         else:
             adj_temp = thermostat_temp
 
         self.log(
-                f"adj_temp: {adj_temp}, current_indoor_temp: {thermostat_temp}, current_outside_temp: {current_outside_temp}"
+            f"adj_temp: {adj_temp}, current_indoor_temp: {thermostat_temp}, current_outside_temp: {current_outside_temp}"
         )
 
         if adj_temp > current_outside_temp:
@@ -87,22 +88,21 @@ class Climate(hass.Hass):
         if current_state != mode:
             self.log("Changing climate mode")
             self.call_service(
-                    "climate/set_hvac_mode", hvac_mode=mode,
-                    entity_id=self.thermostat
+                "climate/set_hvac_mode", hvac_mode=mode, entity_id=self.thermostat
             )
 
         self.log(
-                f"Current Temp Outside: {current_outside_temp}, current indoor temp: {thermostat_temp} setting indoor temp to: {temp}, using mode: {mode}"
+            f"Current Temp Outside: {current_outside_temp}, current indoor temp: {thermostat_temp} setting indoor temp to: {temp}, using mode: {mode}"
         )
         self.call_service(
-                "climate/set_temperature", entity_id=self.thermostat,
-                temperature=temp
+            "climate/set_temperature", entity_id=self.thermostat, temperature=temp
         )
 
     def nearest(self, items, pivot):
-        date_items = [datetime.datetime.combine(datetime.date.today(), x,
-                                                tzinfo=pivot.tzinfo) for x in
-                      items]
+        date_items = [
+            datetime.datetime.combine(datetime.date.today(), x, tzinfo=pivot.tzinfo)
+            for x in items
+        ]
         date_items = [x for x in date_items if x < pivot]
         return min(date_items, key=lambda x: abs(x - pivot)).time()
 
