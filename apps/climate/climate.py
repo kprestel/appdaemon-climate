@@ -23,12 +23,23 @@ class Climate(hass.Hass):
     """Hacs class."""
 
     def initialize(self):
-        self.thermostat = self.args["thermostat"]
-
-        self.prefs = Preferences.from_args(self.args["preferences"])
+        try:
+            self.thermostat = self.args["thermostat"]
+        except KeyError:
+            self.log("missing required argument: thermostat")
+            raise
+        self.mode_switching_enabled = self.args.get("mode_switching_enabled", False)
+        try:
+            self.prefs = Preferences.from_args(self.args["preferences"])
+        except KeyError:
+            self.log("missing required argument: preferences")
         self.log(self.prefs)
         self.time_pref = self.create_pref_time_dict()
-        self._outside_temperature_sensor = self.args["weather_sensor"]
+        try:
+            self._outside_temperature_sensor = self.args["weather_sensor"]
+        except KeyError:
+            self.log("missing required argument: weather_sensor")
+
         self.run_minutely(self.temperature_check, datetime.time(0, 0, 0))
 
     @property
@@ -67,26 +78,37 @@ class Climate(hass.Hass):
         target_area = preference.target_area
 
         if target_area in current_temps:
-            adj_temp = current_temps[target_area] + sensors.get(target_area).get(
-                "adjustment", 0
-            )
+            target_area_temp = current_temps[target_area]
             self.log(
-                f"Target area: {target_area} adjusted temperature: {adj_temp}, actual: {current_temps[target_area]}"
+                f"Target area: {target_area} adjusted temperature: {target_area_temp}, actual: {current_temps[target_area]}"
             )
         else:
-            adj_temp = thermostat_temp
+            self.log("Target area not currenlty in current temperatures")
+            target_area_temp = thermostat_temp
+
+        try:
+            adjustment = thermostat_temp - current_temps[target_area]
+        except KeyError:
+            self.log(
+                f"Could not find target area: {target_area} in current temperatures"
+            )
+            adjustment = 0
+
+        temp = float(temp)
+
+        temp += adjustment
 
         self.log(
-            f"adj_temp: {adj_temp}, current_indoor_temp: {thermostat_temp}, current_outside_temp: {current_outside_temp}"
+            f"adj_temp: {temp}, current_indoor_temp: {thermostat_temp}, current_outside_temp: {current_outside_temp}"
         )
 
-        if adj_temp > current_outside_temp:
+        if target_area_temp > current_outside_temp:
             mode = "heat"
         else:
             mode = "cool"
 
-        if current_state != mode:
-            self.log("Changing climate mode")
+        if current_state != mode and self.mode_switching_enabled:
+            self.log(f"Changing climate mode from {current_state} to {mode}")
             self.call_service(
                 "climate/set_hvac_mode", hvac_mode=mode, entity_id=self.thermostat
             )
