@@ -33,6 +33,8 @@ climate:
   thermostat: climate.kitchen
   weather_sensor: sensor.dark_sky_temperature
   mode_switching_enabled: true
+  max_temperature: 80
+  min_temperature: 60
   inside_temperature_sensors:
     basement:
       sensors:
@@ -70,6 +72,8 @@ climate:
 | `module` | False | string | | The module name of the app. |
 | `class` | False | string | | The name of the Class. |
 | `thermostat` | False | string | | The climate entity to control. |
+| `max_temperature` | True | int | 80 | The max temperature that would ever be set. |
+| `min_temperature` | True | int | 60 | The min temperature that would ever be set. |
 | `mode_switching_enabled` | True | boolean | False | If true, then the app will switch between heat and A/C to acheive the desired temperature  |
 | `weather_sensor` | False | string | | A sensor that provides the current outdoor temperature. |
 | `inside_temperature_sensors` | False | string | | Sensors that provide temperature data about different areas. |
