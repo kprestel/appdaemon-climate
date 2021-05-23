@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import appdaemon.plugins.hass.hassapi as hass
 
@@ -120,6 +120,12 @@ class Climate(hass.Hass):
 
         self.log(f"Current mode: {current_state}, desired mode: {mode}")
 
+        if mode == "cool" and self.min_temperature == temp_to_set and self.mode_switching_enabled and current_state == "heat":
+            self.log(f"Changing climate mode from {current_state} to {mode}")
+            self.call_service(
+                "climate/set_hvac_mode", hvac_mode=mode, entity_id=self.thermostat
+            )
+
         if current_state != mode and self.mode_switching_enabled:
             self.log(f"Changing climate mode from {current_state} to {mode}")
             self.call_service(
@@ -155,6 +161,8 @@ class Climate(hass.Hass):
             for x in items
         ]
         date_items = [x for x in date_items if x < pivot]
+        if not date_items:
+            return min(items)
         return min(date_items, key=lambda x: abs(x - pivot)).time()
 
     def create_pref_time_dict(self) -> Dict[datetime.time, Preferences]:
