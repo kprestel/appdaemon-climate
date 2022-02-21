@@ -2,7 +2,8 @@
 
 _AppDaemon app for [HACS](https://github.com/custom-components/hacs)._
 
-## What is this? 
+## What is this?
+
 This is an appdaemon app that controls your theromstat via Homeassisant. This appp has the ability to target specific areas of your house and prioritize them depending on the time of day.
 
 ## Installation
@@ -10,13 +11,16 @@ This is an appdaemon app that controls your theromstat via Homeassisant. This ap
 Download the `hacs` directory from inside the `apps` directory here to your local `apps` directory, then add the configuration to enable the `hacs` module.
 
 ## Features
+
 * Switch between A/C and Heat based on the current indoor temperature vs the current outdoor temperature.
-* Prioritize different areas of your house based on time of day 
+
+* Prioritize different areas of your house based on time of day
+
 * Allow for adjustments to "actual" temperature to achieve desired temperature
 
 ## App configuration
 
-The configuration is broken into 4 parts. 
+The configuration is broken into 4 parts.
 
 1. AD Configuration
 1. Single required application parameters
@@ -25,16 +29,15 @@ The configuration is broken into 4 parts.
 
 Any "key" in the `inside_temperature_sensors` configuration must map to a target area in `preferences`.
 
-
 ```yaml
 climate:
   module: climatge
   class: Climate
   thermostat: climate.kitchen
   weather_sensor: sensor.dark_sky_temperature
-  mode_switching_enabled: true
-  max_temperature: 80
-  min_temperature: 60
+  mode_switching_enabled: input_boolean.enable_climate_mode_switching
+  max_temperature: input_number.max_temperature
+  min_temperature: input_number.min_temperature
   inside_temperature_sensors:
     basement:
       sensors:
@@ -48,6 +51,10 @@ climate:
       sensors:
           - sensor.masterbed_room_temperature
           - sensor.kids_room_temperature
+  open_close_sensors:
+    - binary_sensor.front_door
+    - binary_sensor.living_room_window
+  climate_off_timeout: "00:30:00"
   preferences:
     morning:
       time: input_datetime.morning
@@ -78,4 +85,3 @@ climate:
 | `weather_sensor` | False | string | | A sensor that provides the current outdoor temperature. |
 | `inside_temperature_sensors` | False | string | | Sensors that provide temperature data about different areas. |
 | `preferences` | False | string | |  Target area configuration |
-
