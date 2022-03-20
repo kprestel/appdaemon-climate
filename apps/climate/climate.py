@@ -60,7 +60,7 @@ class Climate(hass.Hass):
     @property
     def max_temperature(self) -> int:
         try:
-            return int(self.get_state(self.args.get("max_temperature")))
+            return int(float(self.get_state(self.args.get("max_temperature"))))
         except Exception as e:
             self.log("Error getting max temp, using default of 80", e)
             return 80
@@ -68,7 +68,7 @@ class Climate(hass.Hass):
     @property
     def min_temperature(self) -> int:
         try:
-            return int(self.get_state(self.args.get("min_temperature")))
+            return int(float(self.get_state(self.args.get("min_temperature"))))
         except Exception:
             self.log("Error getting min temp. Using default of 55")
             return 55
