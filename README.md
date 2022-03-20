@@ -31,7 +31,7 @@ Any "key" in the `inside_temperature_sensors` configuration must map to a target
 
 ```yaml
 climate:
-  module: climatge
+  module: climate
   class: Climate
   thermostat: climate.kitchen
   weather_sensor: sensor.dark_sky_temperature
@@ -57,20 +57,20 @@ climate:
   climate_off_timeout: "00:30:00"
   preferences:
     morning:
-      time: input_datetime.morning
-      temperature: input_number.morning_temp
+      input_time: input_datetime.morning
+      input_temperature: input_number.morning_temp
       target_area: top
     daytime:
-      time: input_datetime.daytime_time
-      temperature: input_number.daytime_temp
+      input_time: input_datetime.daytime_time
+      input_temperature: input_number.daytime_temp
       target_area: main
     evening:
-      time: input_datetime.evening
-      temperature: input_number.evening_temp
+      input_time: input_datetime.evening
+      input_temperature: input_number.evening_temp
       target_area: basement
     bedtime:
-      time: input_datetime.bedtime
-      temperature: input_number.bedtime_temp
+      input_time: input_datetime.bedtime
+      input_temperature: input_number.bedtime_temp
       target_area: top
 ```
 
