@@ -1,3 +1,5 @@
+from asyncio.log import logger
+from calendar import c
 import datetime
 from dataclasses import dataclass
 from typing import Dict
@@ -186,9 +188,13 @@ class Climate(hass.Hass):
             temps = []
             for x in v["sensors"]:
                 inside_temp = self.get_state(x)
+                if not inside_temp:
+                    logger.warn(f"{inside_temp} was {inside_temp} which cannot be parsed.")
+                    continue
+
                 try:
                     temps.append(float(inside_temp))
-                except ValueError:
+                except (ValueError, TypeError):
                     self.log(f"could not parse {inside_temp}")
 
             if temps:
