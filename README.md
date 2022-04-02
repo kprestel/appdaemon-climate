@@ -38,6 +38,7 @@ climate:
   mode_switching_enabled: input_boolean.enable_climate_mode_switching
   max_temperature: input_number.max_temperature
   min_temperature: input_number.min_temperature
+  climate_temperature_difference: input_number.climate_temperature_difference
   inside_temperature_sensors:
     basement:
       sensors:

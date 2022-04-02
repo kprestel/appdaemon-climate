@@ -1,7 +1,7 @@
 from asyncio.log import logger
 import datetime
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Iterable, List
 
 import appdaemon.plugins.hass.hassapi as hass
 
@@ -86,6 +86,23 @@ class Climate(hass.Hass):
             self.log("Error getting mode switching option, defaulting to false.", e)
             return False
 
+    @property
+    def climate_temperature_difference(self) -> int:
+        try:
+            return int(float(self.get_state(self.args.get("input_number.climate_temperature_difference", 0))))
+        except Exception:
+            self.log("Unable to parse input_number.climate_temperature_difference", level="WARNING")
+            return 0
+   
+    @property
+    def inside_temperature_sensors(self) -> Dict[str, Dict[str, List[str]]]:
+        return self.args.get("inside_temperature_sensors", {})
+
+    def get_temperature_sensors(self) -> Iterable[str]:
+        for d in self.inside_temperature_sensors.values():
+            for sensor in d.values():
+                yield from sensor
+
     def open_close_callback(self, entity, attribute, old, new, kwargs):
         self.log(f"Running open_close_callback, new: {new}, old: {old}, entity: {entity}")
         if old == new:
@@ -100,12 +117,12 @@ class Climate(hass.Hass):
 
     def turn_off_climate(self, kwargs=None):
         self.log("Turning climate off")
-        self.call_service("climate/turn_off")
+        self.call_service("climate/turn_off", entity_id=self.thermostat)
         self.run_in(self.turn_on_climate, self.open_close_callback)
 
     def turn_on_climate(self, kwargs=None):
         self.log("Turning climate on")
-        self.call_service("climate/turn_on")
+        self.call_service("climate/turn_on", entity_id=self.thermostat)
 
     def temperature_check(self, kwargs):
         self.log("Checking temperature")
@@ -126,7 +143,7 @@ class Climate(hass.Hass):
         if target_area in current_temps:
             target_area_temp = current_temps[target_area]
             self.log(
-                f"Target area: {target_area} adjusted temperature: {target_area_temp}, actual: {current_temps[target_area]}"
+                f"Target area: {target_area} actual: {current_temps[target_area]}"
             )
         else:
             self.log("Target area not currently in current temperatures")
