@@ -117,12 +117,12 @@ class Climate(hass.Hass):
 
     def turn_off_climate(self, kwargs=None):
         self.log("Turning climate off")
-        self.call_service("climate/turn_off")
+        self.call_service("climate/turn_off", entity_id=self.thermostat)
         self.run_in(self.turn_on_climate, self.open_close_callback)
 
     def turn_on_climate(self, kwargs=None):
         self.log("Turning climate on")
-        self.call_service("climate/turn_on")
+        self.call_service("climate/turn_on", entity_id=self.thermostat)
 
     def temperature_check(self, kwargs):
         self.log("Checking temperature")
