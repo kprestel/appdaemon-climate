@@ -149,15 +149,7 @@ class Climate(hass.Hass):
             self.log("Target area not currently in current temperatures")
             target_area_temp = thermostat_temp
 
-        try:
-            adjustment = thermostat_temp - current_temps[target_area]
-        except KeyError:
-            self.log(
-                f"Could not find target area: {target_area} in current temperatures"
-            )
-            adjustment = 0
-
-        temp_to_set += adjustment
+        # temp_to_set = self.get_adjusted_temp(temp_to_set, thermostat_temp, current_temps, target_area)
 
         if temp_to_set > self.max_temperature:
             self.log(f"temp: {temp_to_set} was too high, using max temperature: {self.max_temperature}")
@@ -197,6 +189,19 @@ class Climate(hass.Hass):
         self.call_service(
             "climate/set_temperature", entity_id=self.thermostat, temperature=temp_to_set
         )
+
+    def get_adjusted_temp(self, temp_to_set, thermostat_temp, current_temps, target_area):
+        try:
+            adjustment = thermostat_temp - current_temps[target_area]
+        except KeyError:
+            self.log(
+                f"Could not find target area: {target_area} in current temperatures"
+            )
+            adjustment = 0
+
+        temp_to_set += adjustment
+
+        return temp_to_set
 
     def get_current_temperatures(self, sensors):
         current_temps = {}
